@@ -1,0 +1,506 @@
+
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mr. A Perfume Boutique</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&family=Playfair+Display&display=swap" rel="stylesheet">
+  <script src="const express = require('express');.js" def></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      color: #0c0000;
+    }
+
+    header {
+      background-color: #1d06f0;
+      color: white;
+      padding: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+    }
+
+    nav ul li {
+      margin-left: 1rem;
+    }
+
+    nav ul li a {
+      color: #ffd700;
+      text-decoration: none;
+      font-size: 1rem;
+    }
+
+    .cart-icon {
+      position: relative;
+    }
+
+    .cart-icon span {
+      background-color: #ffd700;
+      color: #1a1a1a;
+      border-radius: 50%;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.8rem;
+      position: absolute;
+      top: -10px;
+      right: -10px;
+    }
+
+    .hero {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+
+    .hero h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .hero button {
+      background-color: #ffd700;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .hero button:hover {
+      background-color: #e6c200;
+    }
+
+    .products, .cart, .checkout {
+      padding: 2rem 1rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .products h2, .cart h2, .checkout h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .product-card {
+      background-color: white;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 1rem;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .product-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+
+    .product-card h3 {
+      font-size: 1.2rem;
+      margin: 0.5rem 0;
+    }
+
+    .product-card p {
+      font-size: 1rem;
+      color: #555;
+    }
+
+    .product-card button {
+      background-color: #ffd700;
+      border: none;
+      padding: 0.5rem 1rem;
+      margin-top: 0.5rem;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .cart-items {
+      margin-bottom: 1rem;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .cart-item button {
+      background-color: #ff4d4d;
+      color: white;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+    }
+
+    .cart-total {
+      text-align: right;
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
+
+    .checkout-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .checkout-form label {
+      font-weight: bold;
+    }
+
+    .checkout-form input, .checkout-form select {
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .checkout-form button {
+      background-color: #ffd700;
+      border: none;
+      padding: 0.8rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    footer {
+      background-color: #1a1a1a;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+    }
+
+    footer p {
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      nav ul {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .hero h2 {
+        font-size: 1.5rem;
+      }
+
+      .products h2, .cart h2, .checkout h2, .shop h2 {
+        font-size: 1.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero button {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .product-card h3 {
+        font-size: 1rem;
+      }
+
+      .product-card p {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>PERFUMES ONLINESHOP</h1>
+     <nav>
+      <ul>
+       <li> <a href="home-page.html">home</a></li>   
+        <li><a href="#home"></a></li>
+        <li><a href="#products">Shop</a></li>
+        <li><a href="#cart" class="cart-icon">Cart <span id="cart-count">0</span></a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section id="home" class="hero">
+    <h2>Discover Luxury Fragrances</h2>
+    <p>Elevate your scent game with An Online Perfume Shop.</p>
+    <button onclick="document.getElementById('products').scrollIntoView()">Shop Now</button>
+  </section>
+
+  <section id="products" class="products">
+    <h2>Our Collection</h2>
+    <div class="product-grid" id="product-grid">
+      <!-- Products will be populated by JavaScript -->
+    </div>
+  </section>
+
+  <section id="cart" class="cart" style="display: none;">
+    <h2>Your Cart</h2>
+    <div class="cart-items" id="cart-items"></div>
+    <div class="cart-total" id="cart-total">Total: $0</div>
+    <button onclick="showCheckout()" style="display: none;" id="checkout-btn">Proceed to Checkout</button>
+  </section>
+
+  <section id="checkout" class="checkout" style="display: none;">
+    <h2>Checkout</h2>
+    <div class="checkout-form" id="checkout-form">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" required>
+      <label for="address">Address</label>
+      <input type="text" id="address" required>
+      <label for="phone">Phone Number</label>
+      <input type="tel" id="phone" required pattern="[0-9]{10,12}">
+      <label for="payment-method">Payment Method</label>
+      <select id="payment-method" required>
+        <option value="mobile-money">Mobile Money</option>
+        <option value="bank-card">Bank Card</option>
+      </select>
+      <label for="transaction-id">Transaction ID / Phone Number</label>
+      <input type="text" id="transaction-id" required>
+      <button onclick="simulatePayment()">Complete Purchase</button>
+    </div>
+  </section>
+
+  <footer id="contact">
+    <p>Contact us at: info@mrasperfumes.com | +255 123 456 789</p>
+    <p>Secure browsing requires HTTPS in production.</p>
+  </footer>
+
+  <script>
+    const products = [
+      {
+        id: 1,
+        name: "RAMZ LATAFA",
+        price: 50,
+        description: "A Woody Aromatic scent with bergamot, black pepper, lavender, and sandalwood.",
+        image: "ramzs.jpg"
+      },
+      {
+        id: 2,
+        name: "NOW",
+        price: 40,
+        description: "A fresh aquatic fragrance with sea salt, citrus, and cedarwood.",
+        image: "now.jpg"
+      },
+      {
+        id: 3,
+        name: "BARRIES WEEKEND",
+        price: 60,
+        description: "A rich oriental scent with oud, amber, and vanilla.",
+        image: "barries.jpg"
+      }
+      
+    ];
+
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+    function saveCart() {
+      localStorage.setItem('cart', JSON.stringify(cart));
+      updateCartUI();
+    }
+
+    function displayProducts() {
+      const productGrid = document.getElementById('product-grid');
+      productGrid.innerHTML = '';
+      products.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.innerHTML = `
+          <img src="${product.image}" alt="${product.name}">
+          <h3>${product.name}</h3>
+          <p>$${product.price}</p>
+          <p>${product.description}</p>
+          <button onclick="addToCart(${product.id})">Add to Cart</button>
+        `;
+        productGrid.appendChild(card);
+      });
+    }
+
+    function addToCart(productId) {
+      const product = products.find(p => p.id === productId);
+      const cartItem = cart.find(item => item.id === productId);
+      if (cartItem) {
+        cartItem.quantity++;
+      } else {
+        cart.push({ ...product, quantity: 1 });
+      }
+      saveCart();
+    }
+
+    function removeFromCart(productId) {
+      cart = cart.filter(item => item.id !== productId);
+      saveCart();
+    }
+
+    function updateCartUI() {
+      const cartItems = document.getElementById('cart-items');
+      const cartTotal = document.getElementById('cart-total');
+      const cartCount = document.getElementById('cart-count');
+      const checkoutBtn = document.getElementById('checkout-btn');
+
+      cartItems.innerHTML = '';
+      let total = 0;
+      let itemCount = 0;
+
+      cart.forEach(item => {
+        total += item.price * item.quantity;
+        itemCount += item.quantity;
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.innerHTML = `
+          <span>${item.name} (x${item.quantity}) - $${item.price * item.quantity}</span>
+          <button onclick="removeFromCart(${item.id})">Remove</button>
+        `;
+        cartItems.appendChild(cartItem);
+      });
+
+      cartTotal.textContent = `Total: $${total}`;
+      cartCount.textContent = itemCount;
+      checkoutBtn.style.display = cart.length > 0 ? 'block' : 'none';
+    }
+
+    function showCart() {
+      document.getElementById('products').style.display = 'none';
+      document.getElementById('checkout').style.display = 'none';
+      document.getElementById('cart').style.display = 'block';
+      updateCartUI();
+    }
+
+    function showCheckout() {
+      document.getElementById('cart').style.display = 'none';
+      document.getElementById('checkout').style.display = 'block';
+    }
+
+    function simulatePayment() {
+      const name = document.getElementById('name').value;
+      const address = document.getElementById('address').value;
+      const phone = document.getElementById('phone').value;
+      const paymentMethod = document.getElementById('payment-method').value;
+      const transactionId = document.getElementById('transaction-id').value;
+
+      if (!name || !address || !phone || !paymentMethod || !transactionId) {
+        alert('Please fill in all fields.');
+        return;
+      }
+
+      setTimeout(() => {
+        const orderNumber = Math.floor(Math.random() * 1000000);
+        alert(`Payment Successful! Order #${orderNumber}\nThank you for shopping with Mr. A's Perfume Boutique.`);
+        cart = [];
+        saveCart();
+        document.getElementById('checkout-form').reset();
+        document.getElementById('products').style.display = 'block';
+        document.getElementById('checkout').style.display = 'none';
+      }, 2000);
+    }
+
+    document.querySelector('a[href="#cart"]').addEventListener('click', (e) => {
+      e.preventDefault();
+      showCart();
+    });
+
+    document.querySelector('a[href="#products"]').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('cart').style.display = 'none';
+      document.getElementById('checkout').style.display = 'none';
+      document.getElementById('products').style.display = 'block';
+    });
+
+    document.querySelector('a[href="#home"]').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('cart').style.display = 'none';
+      document.getElementById('checkout').style.display = 'none';
+      document.getElementById('products').style.display = 'none';
+      document.getElementById('home').scrollIntoView();
+    });
+
+    displayProducts();
+    updateCartUI();
+  </script>
+</body>
+</html>
